@@ -3,21 +3,40 @@ import random
 import threading
 import keyboard 
 
-SPI_SETMOUSESPEED = 0x0070 
-SPEED_LEVELS = 10 
+SPI_GETMOUSESPEED = 0x0070
+SPI_SETMOUSESPEED = 0x0071
+speedlevels = 10 
+
+running = False
+originalsens = ctypes.windll.user32.SystemParametersInfoA(SPI_GETMOUSESPEED, 1, None, 0)
 
 def setsens():
-   sens = random.randint(0, SPEED_LEVELS - 1)
+   sens = random.randint(0, speedlevels - 1)
    ctypes.windll.user32.SystemParametersInfoA(SPI_SETMOUSESPEED, 0, sens, 0)
+   print("sens changed")
 
-def runtimer():
+def restoresens():
+    ctypes.windll.user32.SystemParametersInfoA(SPI_SETMOUSESPEED, 0, originalsens, 0)
+    print("sens restored")
+
+def toggle():
+    global running
+    if running:
+        restoresens()
+        running = False
+        print("off")
+    else:
+        setsens()
+        running = True
+        print("on")
+
+keyboard.add_hotkey("F3", toggle)
+
+def randominterval():
    while True:
        setsens()
-       timer = threading.Timer(5, setsens) 
-       timer.start()
-       if keyboard.is_pressed("esc"):  
-           print("Program stopped.")
-           break  
+       interval = random.randint(0,5)
+       threading.Timer(interval, randominterval).start() 
 
 if __name__ == "__main__":
-    runtimer()
+    keyboard.wait()
