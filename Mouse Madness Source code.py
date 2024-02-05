@@ -26,7 +26,7 @@ def toggle():
         running = False
         print("off")
     else:
-        setsens()
+        randominterval()
         running = True
         print("on")
 
